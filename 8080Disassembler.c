@@ -3,10 +3,23 @@
 
 int Disassemble8080Op(unsigned char *buffer, int pc);
 
-int main(){
+int main(int argc, char *argv[]){
+
+	char fName[25];
+
+	if (argc < 2){
+		printf("Bin File: ");
+		scanf("%s", fName);
+	} else if (argc > 2) {
+		printf("Too many arguments.\nBin File: ");
+		scanf("%s", fName);
+	}
 
 	FILE *fp;
-	fp = fopen("invaders.h", "rb");
+	if (argc == 2)
+		fp = fopen(argv[1], "rb");
+	else
+		fp = fopen(fName, "rb");
 
 	fseek(fp, 0L, SEEK_END);
 	int fsize = ftell(fp);
@@ -16,11 +29,6 @@ int main(){
 
 	fread(buffer, fsize, 1, fp);
 	fclose(fp);
-	/*
-	for(int i = 0; i < fsize; ++i){
-		printf("%02X\n", buffer[i]);
-	}
-	*/
 
 	int pc = 0;
 	while(pc < fsize){
