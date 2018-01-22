@@ -39,8 +39,6 @@ void UnimplementedInstruction(State8080 *state){
 	exit(1);
 }
 /*
-0x13	INX D
-0x19	DAD D
 0x1a	LDAX D
 0x21	LXI H,D16
 0x23	INX H
@@ -148,13 +146,26 @@ void Emulate8080Op(State8080 *state){
 			state->PC += 2;
 			break;
 		case 0x12: printf("STAX D");	break;
-		case 0x13: printf("INX D");	break;
+		case 0x13:			//INX D, Increment registers D & E.
+			++(state->E);
+			if (state->E == 0)
+				++(state->D);
+			break;
 		case 0x14: printf("INR D");	break;
 		case 0x15: printf("DCR D");	break;
 		case 0x16: printf("MVI D, $%02X", code[1]); break;
 		case 0x17: printf("RAL");	break;
-		case 0x18: break;	//NOP
-		case 0x19: printf("DAD D");	break;
+		case 0x18: break;		//NOP
+		case 0x19:			//DAD D, Add D,E to H,L
+			{
+				uint32_t HL = (state->H << 8) | state->L;
+				uint32_t DE = (state->D << 8) | state->E;
+				uint32_t x = HL + DE;
+				state->H = (x & 0xFF00) >> 8;
+				state->L = (x & 0xFF);
+				state->cc.cy = ((x & 0xFFFF0000) > 0);
+			}
+			break;
 		case 0x1A: printf("LDAX D");	break;
 		case 0x1B: printf("DCX D");	break;
 		case 0x1C: printf("INR E");	break;
