@@ -1,42 +1,46 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-int Disassemble8080Op(unsigned char *buffer, int pc);
+typedef struct ConditionCodes{
+	uint8_t	z:1;
+	uint8_t	s:1;
+	uint8_t	p:1;
+	uint8_t	cy:1;
+	uint8_t	ac:1;
+	uint8_t	pad:3;
+} ConditionCodes;
 
-int main(int argc, char *argv[]){
+typedef struct State8080{
+	uint8_t 	A;
+	uint8_t 	B;
+	uint8_t 	C;
+	uint8_t 	D;
+	uint8_t 	E;
+	uint8_t 	H;
+	uint8_t		L;
+	uint16_t	SP;
+	uint16_t 	PC;
+	uint8_t		*memory;
+	uint8_t		int_enable;
+	struct		ConditionCodes cc;
+} State8080;
 
-	char fName[25];
+void UnimplementedInstruction(State8080 *state);
 
-	if (argc < 2){
-		printf("Bin File: ");
-		scanf("%s", fName);
-	} else if (argc > 2) {
-		printf("Too many arguments.\nBin File: ");
-		scanf("%s", fName);
-	}
-
-	FILE *fp;
-	if (argc == 2)
-		fp = fopen(argv[1], "rb");
-	else
-		fp = fopen(fName, "rb");
-
-	fseek(fp, 0L, SEEK_END);
-	int fsize = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-
-	unsigned char  *buffer = malloc(fsize);
-
-	fread(buffer, fsize, 1, fp);
-	fclose(fp);
-
-	int pc = 0;
-	while(pc < fsize){
-		pc += Disassemble8080Op(buffer, pc);
-	}
+int main(){
+	State8080 machine;
+	machine.PC = 3;
+	UnimplementedInstruction(&machine);
+	printf("PC: %i\n", machine.PC);
 	return 0;
 }
 
+void UnimplementedInstruction(State8080 *state){
+	--(state->PC);
+	printf("Unimplemented Instruction\n");
+	exit(1);
+}
 int Disassemble8080Op(unsigned char *buffer, int pc){
 	unsigned char *code = &buffer[pc];
 	int opLength = 1;
